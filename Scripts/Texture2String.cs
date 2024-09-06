@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Text;
-using UdonLab;
 using UnityEngine;
 
 namespace Sonic853.Texture2String
@@ -21,37 +20,41 @@ namespace Sonic853.Texture2String
 
             // 获取 Texture2D 图片的所有像素颜色（使用 Color32 格式）
             var pixels = texture.GetPixels32();
+            var pixelsLength = pixels.Length;
 
-            var bytes = new byte[0];
+            int length = pixels[0].GetTextLength();
+            if (useLength && length <= 0) return "";
 
-            int length = -1;
+            // 烦，调整Array长度的效率不如一开始就定好的长度
+            var bytes = new byte[useLength ? length : useAlpha ? pixelsLength * 4 : pixelsLength * 3];
 
-            foreach (var pixel in pixels)
+            // foreach (var pixel in pixels)
+            var byteindex = 0;
+            for (var i = useLength ? 1 : 0; i < pixelsLength; i++)
             {
+                var pixel = pixels[i];
                 var _bytes = useAlpha ? RGBAToBytes(pixel) : RGBToBytes(pixel);
+                var _bytesLength = _bytes.Length;
                 if (!useLength)
                 {
-                    UdonArrayPlus.AddRange(ref bytes, _bytes);
+                    Array.Copy(_bytes, 0, bytes, byteindex, _bytesLength);
+                    byteindex += _bytesLength;
                     continue;
                 }
-                if (length == -1)
+                if (byteindex > length) break;
+                if (byteindex + _bytesLength < length)
                 {
-                    length = pixel.GetTextLength();
-                    if (length <= 0) return "";
-                    continue;
-                }
-                var bytesLength = bytes.Length;
-                if (bytesLength >= length) break;
-                if (bytesLength + _bytes.Length < length)
-                {
-                    UdonArrayPlus.AddRange(ref bytes, _bytes);
+                    Array.Copy(_bytes, 0, bytes, byteindex, _bytesLength);
+                    byteindex += _bytesLength;
                     continue;
                 }
                 foreach (var b in _bytes)
                 {
-                    if (b == 0x00) continue;
-                    if (bytes.Length >= length) break;
-                    UdonArrayPlus.Add(ref bytes, b);
+                    // 如果长度超过目标长度，停止复制
+                    if (byteindex >= length) break;
+
+                    // 将字节添加到 bytes 数组中
+                    bytes[byteindex++] = b;
                 }
                 break;
             }
@@ -70,31 +73,26 @@ namespace Sonic853.Texture2String
 
             var pixelsLength = pixels.Length;
 
-            var bytes = new byte[0];
-
             if (!useLength || useLength && pixelsLength <= 3)
             {
-                foreach (var pixel in pixels)
+                var _bytes = new byte[pixelsLength];
+                for (var i = 0; i < pixelsLength; i++)
                 {
-                    if (pixel.a == 0x00) continue;
-                    UdonArrayPlus.Add(ref bytes, pixel.a);
+                    _bytes[i] = pixels[i].a;
                 }
-                return Encoding.UTF8.GetString(bytes);
+                return Encoding.UTF8.GetString(_bytes);
             }
 
-            var length = new Color32[] { pixels[0], pixels[1], pixels[2] }.GetTextLengthAlpha();
+            if (pixelsLength - 3 <= 0) return "";
+            var length = pixels.GetTextLengthAlpha();
+            var bytes = new byte[length];
 
-            var remainingPixelsLength = pixels.Length - 3;
-            if (length <= 0 || remainingPixelsLength <= 0) return "";
-
-            var remainingPixels = new Color32[remainingPixelsLength];
-            Array.Copy(pixels, 3, remainingPixels, 0, remainingPixelsLength);
-
-            foreach (var pixel in remainingPixels)
+            var byteindex = 0;
+            var length1 = length - 1;
+            for (var i = 3; i < pixelsLength; i++)
             {
-                if (pixel.a == 0x00) continue;
-                if (bytes.Length >= length) break;
-                UdonArrayPlus.Add(ref bytes, pixel.a);
+                bytes[byteindex] = pixels[i].a;
+                if (byteindex++ >= length1) break;
             }
             return Encoding.UTF8.GetString(bytes);
         }
@@ -123,7 +121,7 @@ namespace Sonic853.Texture2String
         }
         public static Color32 LengthToColor(int length)
         {
-            return new Color32((byte)((length >> 16) & 0xFF), (byte)((length >> 8) & 0xFF), (byte)(length & 0xFF), 255);
+            return new Color32((byte)((length >> 16) & 0xFF), (byte)((length >> 8) & 0xFF), (byte)(length & 0xFF), 0x00);
         }
         public static Color32 LengthToColor(Color32 color, int length)
         {
@@ -146,46 +144,46 @@ namespace Sonic853.Texture2String
         {
             return (colors[0].a << 16) | (colors[1].a << 8) | colors[2].a;
         }
-        public static string RGBToHex(Color32 color)
-        {
-            return $"{color.r:x2}{color.g:x2}{color.b:x2}";
-        }
-        public static string RGBAToHex(Color32 color)
-        {
-            return $"{color.a:x2}{color.r:x2}{color.g:x2}{color.b:x2}";
-        }
-        public static string AToHex(Color32 color)
-        {
-            return $"{color.a:x2}";
-        }
-        public static string HexToString(string hex)
-        {
-            // 计算字节数组的长度（每两个字符表示一个字节）
-            var byteCount = hex.Length / 2;
-            var bytes = new byte[0];
+        // public static string RGBToHex(Color32 color)
+        // {
+        //     return $"{color.r:x2}{color.g:x2}{color.b:x2}";
+        // }
+        // public static string RGBAToHex(Color32 color)
+        // {
+        //     return $"{color.a:x2}{color.r:x2}{color.g:x2}{color.b:x2}";
+        // }
+        // public static string AToHex(Color32 color)
+        // {
+        //     return $"{color.a:x2}";
+        // }
+        // public static string HexToString(string hex)
+        // {
+        //     // 计算字节数组的长度（每两个字符表示一个字节）
+        //     var byteCount = hex.Length / 2;
+        //     var bytes = new byte[0];
 
-            // 将每两个十六进制字符转换为一个字节
-            for (var i = 0; i < byteCount; i++)
-            {
-                var substring = hex.Substring(i * 2, 2);
-                if (substring.Equals("00")) continue;
-                UdonArrayPlus.Add(ref bytes, Convert.ToByte(substring, 16));
-            }
+        //     // 将每两个十六进制字符转换为一个字节
+        //     for (var i = 0; i < byteCount; i++)
+        //     {
+        //         var substring = hex.Substring(i * 2, 2);
+        //         if (substring.Equals("00")) continue;
+        //         UdonArrayPlus.Add(ref bytes, Convert.ToByte(substring, 16));
+        //     }
 
-            // 将字节数组转换为字符串（使用 UTF-8 编码）
-            return Encoding.UTF8.GetString(bytes);
-        }
-        public static string StringToHex(string input)
-        {
-            // 将字符串转换为字节数组（使用 UTF-8 编码）
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hexString = "";
-            foreach (var b in bytes)
-            {
-                hexString += $"{b:x2}";
-            }
+        //     // 将字节数组转换为字符串（使用 UTF-8 编码）
+        //     return Encoding.UTF8.GetString(bytes);
+        // }
+        // public static string StringToHex(string input)
+        // {
+        //     // 将字符串转换为字节数组（使用 UTF-8 编码）
+        //     var bytes = Encoding.UTF8.GetBytes(input);
+        //     var hexString = "";
+        //     foreach (var b in bytes)
+        //     {
+        //         hexString += $"{b:x2}";
+        //     }
 
-            return hexString;
-        }
+        //     return hexString;
+        // }
     }
 }
