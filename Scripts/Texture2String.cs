@@ -7,10 +7,10 @@ namespace Sonic853.Texture2String
 {
     public static class Texture2String
     {
-        public static string ToText(this Texture2D texture, bool useLength = true) => RGBToText(texture, useLength);
-        public static string RGBToText(this Texture2D texture, bool useLength = true) => ColorToText(texture, false, useLength);
-        public static string RGBAToText(this Texture2D texture, bool useLength = true) => ColorToText(texture, true, useLength);
-        public static string ColorToText(this Texture2D texture, bool useAlpha = false, bool useLength = true)
+        public static string ToText(this Texture2D texture, bool useLength = true, bool evenStorage = false) => RGBToText(texture, useLength, evenStorage);
+        public static string RGBToText(this Texture2D texture, bool useLength = true, bool evenStorage = false) => ColorToText(texture, false, useLength, evenStorage);
+        public static string RGBAToText(this Texture2D texture, bool useLength = true, bool evenStorage = false) => ColorToText(texture, true, useLength, evenStorage);
+        public static string ColorToText(this Texture2D texture, bool useAlpha = false, bool useLength = true, bool evenStorage = false)
         {
             if (texture == null)
             {
@@ -22,45 +22,48 @@ namespace Sonic853.Texture2String
             var pixels = texture.GetPixels32();
             var pixelsLength = pixels.Length;
 
-            int length = pixels[0].GetTextLength();
+            var length = pixels[0].GetTextLength();
             if (useLength && length <= 0) return "";
 
             // 烦，调整Array长度的效率不如一开始就定好的长度
             var bytes = new byte[useLength ? length : useAlpha ? pixelsLength * 4 : pixelsLength * 3];
 
-            // foreach (var pixel in pixels)
-            var byteindex = 0;
-            for (var i = useLength ? 1 : 0; i < pixelsLength; i++)
+            var byteIndex = 0;
+
+            // 计算间隔
+            var interval = evenStorage ? (pixelsLength - 1) / (length / (useAlpha ? 4 : 3)) : 1;
+
+            for (var i = useLength ? 1 : 0; i < pixelsLength; i += interval)
             {
                 var pixel = pixels[i];
                 var _bytes = useAlpha ? RGBAToBytes(pixel) : RGBToBytes(pixel);
                 var _bytesLength = _bytes.Length;
                 if (!useLength)
                 {
-                    Array.Copy(_bytes, 0, bytes, byteindex, _bytesLength);
-                    byteindex += _bytesLength;
+                    Array.Copy(_bytes, 0, bytes, byteIndex, _bytesLength);
+                    byteIndex += _bytesLength;
                     continue;
                 }
-                if (byteindex > length) break;
-                if (byteindex + _bytesLength < length)
+                if (byteIndex > length) break;
+                if (byteIndex + _bytesLength < length)
                 {
-                    Array.Copy(_bytes, 0, bytes, byteindex, _bytesLength);
-                    byteindex += _bytesLength;
+                    Array.Copy(_bytes, 0, bytes, byteIndex, _bytesLength);
+                    byteIndex += _bytesLength;
                     continue;
                 }
                 foreach (var b in _bytes)
                 {
                     // 如果长度超过目标长度，停止复制
-                    if (byteindex >= length) break;
+                    if (byteIndex >= length) break;
 
                     // 将字节添加到 bytes 数组中
-                    bytes[byteindex++] = b;
+                    bytes[byteIndex++] = b;
                 }
                 break;
             }
             return Encoding.UTF8.GetString(bytes);
         }
-        public static string AlphaToText(this Texture2D texture, bool useLength = true)
+        public static string AlphaToText(this Texture2D texture, bool useLength = true, bool evenStorage = false)
         {
             if (texture == null)
             {
@@ -84,15 +87,22 @@ namespace Sonic853.Texture2String
             }
 
             if (pixelsLength - 3 <= 0) return "";
-            var length = pixels.GetTextLengthAlpha();
-            var bytes = new byte[length];
 
-            var byteindex = 0;
-            var length1 = length - 1;
-            for (var i = 3; i < pixelsLength; i++)
+            // 读取数据长度
+            var length = pixels.GetTextLengthAlpha();
+            if (length <= 0) return "";
+
+            var bytes = new byte[length];
+            var byteIndex = 0;
+            var lengthMinusOne = length - 1;
+
+            // 计算间隔
+            var interval = evenStorage ? (pixelsLength - 3) / length : 1;
+
+            for (var i = 3; i < pixelsLength; i += interval)
             {
-                bytes[byteindex] = pixels[i].a;
-                if (byteindex++ >= length1) break;
+                bytes[byteIndex] = pixels[i].a;
+                if (byteIndex++ >= lengthMinusOne) break;
             }
             return Encoding.UTF8.GetString(bytes);
         }

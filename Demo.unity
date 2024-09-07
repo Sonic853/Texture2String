@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &880347547
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -425,7 +425,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2123988099}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
   m_Name: 
@@ -450,7 +450,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2123988099}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29547a3ce709b0e41bda2ebc03c37d24, type: 3}
   m_Name: 
@@ -466,8 +466,9 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2123988100}
   texture: {fileID: 2800000, guid: e863c9b0652c8fb488f8d86ee6980b12, type: 3}
-  useLength: 0
-  mode: 0
+  useLength: 1
+  evenStorage: 1
+  mode: 2
 --- !u!4 &2123988102
 Transform:
   m_ObjectHideFlags: 0

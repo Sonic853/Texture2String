@@ -3,8 +3,7 @@
     "rootNamespace": "",
     "references": [
         "VRC.Udon",
-        "UdonSharp.Runtime",
-        "UdonLab.ArrayPlus"
+        "UdonSharp.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

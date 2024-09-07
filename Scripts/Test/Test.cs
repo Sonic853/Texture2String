@@ -11,39 +11,40 @@ namespace Sonic853
     {
         public Texture2D texture;
         public bool useLength;
+        public bool evenStorage;
         public int mode;
         void Start()
         {
-            switch(mode)
+            switch (mode)
             {
                 case 0:
-                {
-                    TestToText();
-                }
-                break;
+                    {
+                        TestToText();
+                    }
+                    break;
                 case 1:
-                {
-                    TestRGBAToText();
-                }
-                break;
+                    {
+                        TestRGBAToText();
+                    }
+                    break;
                 case 2:
-                {
-                    TestAlphaToText();
-                }
-                break;
+                    {
+                        TestAlphaToText();
+                    }
+                    break;
             }
         }
         public void TestToText()
         {
-            Debug.Log(texture.ToText(useLength));
+            Debug.Log(texture.ToText(useLength, evenStorage));
         }
         public void TestRGBAToText()
         {
-            Debug.Log(texture.RGBAToText(useLength));
+            Debug.Log(texture.RGBAToText(useLength, evenStorage));
         }
         public void TestAlphaToText()
         {
-            Debug.Log(texture.AlphaToText(useLength));
+            Debug.Log(texture.AlphaToText(useLength, evenStorage));
         }
     }
 }
