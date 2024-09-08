@@ -32,6 +32,7 @@ namespace Sonic853.Texture2String
 
             // 计算间隔
             var interval = evenStorage ? (pixelsLength - 1) / (length / (useAlpha ? 4 : 3)) : 1;
+            if (interval == 0) interval = 1;
 
             for (var i = useLength ? 1 : 0; i < pixelsLength; i += interval)
             {
@@ -98,6 +99,7 @@ namespace Sonic853.Texture2String
 
             // 计算间隔
             var interval = evenStorage ? (pixelsLength - 3) / length : 1;
+            if (interval == 0) interval = 1;
 
             for (var i = 3; i < pixelsLength; i += interval)
             {
