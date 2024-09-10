@@ -1,0 +1,4 @@
+[submodule "Editor/String2Texture"]
+	path = Editor/String2Texture
+	url = git@github.com:Sonic853/String2Texture_Editor.git
+    branch = master
