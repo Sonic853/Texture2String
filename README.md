@@ -3,14 +3,14 @@ Click the "Add Repository" button under Settings → Packages and enter the foll
 
 https://page.853lab.com/vpm-repos/vpm.json
 
-Then add the "UdonNewspaper" package to the project.
+Then add the "Texture2String" package to the project.
 
 # 安装方法（VCC）：
 在 Settings → Packages 下点击“Add Repository”按钮后输入以下URL：
 
 https://page.853lab.com/vpm-repos/vpm.json
 
-随后在项目添加“UdonNewspaper”包。
+随后在项目添加“Texture2String”包。
 
 ## License restrictions 许可限制
 Non-Mainland China (except China Hong Kong, China Macau, and China Taiwan) individuals or companies are subject to an LGPL license.
